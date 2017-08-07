@@ -20,7 +20,11 @@ defmodule EventStore.Writer do
   end
 
   def init([serializer, config]) do
-    storage_config = config |> Keyword.merge(pool: DBConnection.Poolboy, pool_size: 1, pool_overflow: 0)
+    storage_config = Keyword.merge(config, [
+      pool: DBConnection.Poolboy,
+      pool_size: 1,
+      pool_overflow: 0,
+    ])
 
     {:ok, conn} = Postgrex.start_link(storage_config)
 

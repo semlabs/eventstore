@@ -44,7 +44,7 @@ defmodule EventStore.Mixfile do
       {:poison, "~> 3.0", only: [:bench, :test]},
       {:poolboy, "~> 1.5"},
       {:postgrex, "~> 0.13"},
-      {:uuid, "~> 1.1", only: [:bench, :test]},
+      {:uuid, "~> 1.1"},
     ]
   end
 

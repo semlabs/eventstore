@@ -4,7 +4,16 @@
 
 ### Enhancements
 
-- Use [DBConnection](https://hexdocs.pm/db_connection/DBConnection.html)'s built in support for connection pools (using poolboy). 
+- Use `uuid` data type for event correlation_id and causation_id ([#57](https://github.com/slashdotdash/eventstore/pull/57)).
+
+  You will need to migrate your event store database using the following SQL statements:
+
+  ```SQL
+  ALTER TABLE events ALTER COLUMN correlation_id TYPE uuid USING correlation_id::uuid;
+  ALTER TABLE events ALTER COLUMN causation_id TYPE uuid USING causation_id::uuid;
+  ```
+
+- Use [DBConnection](https://hexdocs.pm/db_connection/DBConnection.html)'s built in support for connection pools (using poolboy).
 
 ## v0.9.0
 

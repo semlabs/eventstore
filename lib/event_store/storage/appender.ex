@@ -35,8 +35,8 @@ defmodule EventStore.Storage.Appender do
         event.event_id,
         event.stream_id,
         event.stream_version,
-        event.correlation_id,
-        event.causation_id,
+        event.correlation_id |> uuid(),
+        event.causation_id |> uuid(),
         event.event_type,
         event.data,
         event.metadata,
@@ -44,6 +44,10 @@ defmodule EventStore.Storage.Appender do
       ]
     end)
   end
+
+  defp uuid(uuid)
+  defp uuid(nil), do: nil
+  defp uuid(uuid), do: UUID.string_to_binary!(uuid)
 
   defp handle_response({:ok, %Postgrex.Result{num_rows: 0}}, stream_id) do
     _ = Logger.info(fn -> "failed to append any events to stream id #{stream_id}" end)

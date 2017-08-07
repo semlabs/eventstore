@@ -3,7 +3,7 @@ defmodule EventStore.Storage.ReadEventsTest do
   doctest EventStore.Storage
 
   alias EventStore.EventFactory
-  alias EventStore.Storage
+  alias EventStore.{RecordedEvent,Storage}
   alias EventStore.Storage.{Appender,Stream}
 
   describe "read stream forward" do
@@ -18,17 +18,49 @@ defmodule EventStore.Storage.ReadEventsTest do
     end
 
     test "with single event", %{conn: conn} do
-      {:ok, stream_id} = create_stream_containing_events(conn, 1)
+      {:ok, stream_id} = create_stream(conn)
 
-      {:ok, read_events} = Storage.read_stream_forward(stream_id, 0, 1_000)
+      [recorded_event] = EventFactory.create_recorded_events(1, stream_id)
 
-      read_event = hd(read_events)
-      recorded_event = hd(EventFactory.create_recorded_events(1, stream_id))
+      {:ok, 1} = Appender.append(conn, stream_id, [recorded_event])
 
+      {:ok, [read_event]} = Storage.read_stream_forward(stream_id, 0, 1_000)
+
+      assert recorded_event == read_event
       assert read_event.event_id == 1
       assert read_event.stream_id == 1
       assert read_event.data == recorded_event.data
       assert read_event.metadata == recorded_event.metadata
+      assert read_event.causation_id == recorded_event.causation_id
+      assert read_event.correlation_id == recorded_event.correlation_id
+    end
+
+    test "without correlation_id", %{conn: conn} do
+      {:ok, stream_id} = create_stream(conn)
+
+      [recorded_event] = EventFactory.create_recorded_events(1, stream_id)
+
+      recorded_event = %RecordedEvent{recorded_event | correlation_id: nil}
+
+      {:ok, 1} = Appender.append(conn, stream_id, [recorded_event])
+
+      {:ok, [read_event]} = Storage.read_stream_forward(stream_id, 0, 1_000)
+
+      assert recorded_event == read_event
+    end
+
+    test "without causation_id", %{conn: conn} do
+      {:ok, stream_id} = create_stream(conn)
+
+      [recorded_event] = EventFactory.create_recorded_events(1, stream_id)
+
+      recorded_event = %RecordedEvent{recorded_event | causation_id: nil}
+
+      {:ok, 1} = Appender.append(conn, stream_id, [recorded_event])
+
+      {:ok, [read_event]} = Storage.read_stream_forward(stream_id, 0, 1_000)
+
+      assert recorded_event == read_event
     end
 
     test "with multiple events from origin limited by count", %{conn: conn} do
