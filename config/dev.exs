@@ -24,3 +24,6 @@ config :eventstore, EventStore.StorageAdapters.Ecto.Repo,
   hostname: "localhost",
   port: 5432,
   pool_size: 10
+
+config :eventstore,
+    repo: EventStore.StorageAdapters.Ecto.Repo 

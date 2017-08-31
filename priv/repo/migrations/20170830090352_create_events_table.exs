@@ -16,5 +16,19 @@ defmodule EventStore.StorageAdapters.Ecto.Repo.Migrations.CreateEventsTable do
 
     create index(:events, [:stream_id], name: :ix_events_stream_id)
     create unique_index(:events, [:stream_id, "stream_version DESC"], name: :ix_events_stream_id_stream_version)
+
+    Application.get_env(:eventstore, :repo).__adapter__()
+    |> create_rules()
   end
+
+  defp create_rules(Ecto.Adapters.Postgres) do
+    execute """
+    CREATE RULE no_update_events AS ON UPDATE TO events DO INSTEAD NOTHING;
+    """
+
+    execute """
+    CREATE RULE no_delete_events AS ON DELETE TO events DO INSTEAD NOTHING;
+    """
+  end
+  defp create_rules(_), do: :ok
 end
